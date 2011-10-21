@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.Paint.Style;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -12,8 +13,10 @@ import android.view.View;
 
 public class TouchZone extends View {
 	private static final int _FONT_SIZE = 40;
-	private static final int _SMALL_FONT_SIZE = 20;
+	private static final int _SMALL_FONT_SIZE = 14;
+	private static final float _RADIUS = 20.0f;
 	private static final String TOUCH_ZONE_VIEW = "TouchZoneView";
+	private boolean mUpdating = false;
 	private float mX;
 	private float mY;
 	private int[] mViewLocation = new int[2];
@@ -35,6 +38,10 @@ public class TouchZone extends View {
 		mPenPaint.setTextSize(_FONT_SIZE);
 		mPenPaintSmall.setColor(Color.BLACK);
 		mPenPaintSmall.setTextSize(_SMALL_FONT_SIZE);
+		getLocationOnScreen(mViewLocation);
+		Log.d(TOUCH_ZONE_VIEW, String.format(
+				"onCreate: ViewLocation X:%1$d Y:%2$d", mViewLocation[0],
+				mViewLocation[1]));
 	}
 
 	@Override
@@ -71,31 +78,48 @@ public class TouchZone extends View {
 	}
 
 	private void setXY(MotionEvent me) {
+		mUpdating = true;
 		mPointerCount = me.getPointerCount();
 		for (int i = 0; i < mPointerCount; i++) {
 			mXs[i] = me.getX(me.getPointerId(i));
 			mYs[i] = me.getY(me.getPointerId(i));
+			Log.d(TOUCH_ZONE_VIEW, String.format("Pid: %1$d", me
+					.getPointerId(i)));
+			Log.d(TOUCH_ZONE_VIEW, String.format(
+					"Pointer setXY %3$d => x:%1$e y%2$e", mXs[i], mYs[i], i));
+			// float half = _RADIUS / 2;
+			// Rect r = new Rect((int) (mXs[i] - half), (int) (mYs[i] - half),
+			// (int) (mXs[i] + half), (int) (mYs[i] + half));
+			// invalidate(r);
 		}
 		for (int j = mPointerCount; j < 10; j++) {
 			mXs[j] = -1f;
 			mYs[j] = -1f;
 		}
+		mUpdating = false;
 	}
 
+	// TODO: investigate why the two pointer may switch position on some occasions
 	@Override
 	protected void onDraw(Canvas canvas) {
-		canvas.drawColor(Color.GRAY);
-		canvas.drawText(String.format("Pointer Count: %1$d", mPointerCount),
-				mViewLocation[0], mViewLocation[1], mPenPaint);
-		for (int i = 0; i < 10; i++) {
-			if (mXs[i] > 0) {
-				canvas.drawCircle(mXs[i], mYs[i], 20.0f, mPaint);
-				Log.d(TOUCH_ZONE_VIEW, String.format(
-						"Pointer %3$d => x:%1$e y%2$e", mXs[i], mYs[i], i));
-				canvas.drawText(String.format(
-						"Pointer %3$d position => x:%1$.1f y%2$.1f", mXs[i],
-						mYs[i], i), mViewLocation[0], mViewLocation[1]
-						+ _FONT_SIZE + _SMALL_FONT_SIZE * i, mPenPaintSmall);
+		if (mUpdating) {
+			return;
+		} else {
+			canvas.drawColor(Color.GRAY);
+			canvas.drawText(
+					String.format("Pointer Count: %1$d", mPointerCount),
+					mViewLocation[0], mViewLocation[1], mPenPaint);
+			for (int i = 0; i < 10; i++) {
+				if (mXs[i] > 0f) {
+					canvas.drawCircle(mXs[i], mYs[i], _RADIUS, mPaint);
+					Log.d(TOUCH_ZONE_VIEW, String.format(
+							"Pointer %3$d => x:%1$e y%2$e", mXs[i], mYs[i], i));
+					canvas.drawText(String.format(
+							"Pointer %3$d position => x:%1$.1f y%2$.1f",
+							mXs[i], mYs[i], i), mViewLocation[0],
+							mViewLocation[1] + _FONT_SIZE + _SMALL_FONT_SIZE
+									* i, mPenPaintSmall);
+				}
 			}
 		}
 	}

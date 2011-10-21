@@ -10,6 +10,6 @@
 		android:text="@string/hello" />
 	<com.dreamfish.exp.handleinput.TouchZone
 		android:id="@+id/touchZone1"
-		android:layout_width="300dp"
-		android:layout_height="300dp"></com.dreamfish.exp.handleinput.TouchZone>
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"></com.dreamfish.exp.handleinput.TouchZone>
 </LinearLayout>
