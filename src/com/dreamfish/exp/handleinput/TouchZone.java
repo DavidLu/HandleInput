@@ -13,7 +13,7 @@ import android.view.View;
 
 public class TouchZone extends View {
 	private static final int _FONT_SIZE = 40;
-	private static final int _SMALL_FONT_SIZE = 14;
+	private static final int _SMALL_FONT_SIZE = 12;
 	private static final float _RADIUS = 20.0f;
 	private static final String TOUCH_ZONE_VIEW = "TouchZoneView";
 	private boolean mUpdating = false;
@@ -23,6 +23,7 @@ public class TouchZone extends View {
 
 	private float[] mXs = new float[10];
 	private float[] mYs = new float[10];
+	private String[] mPointerMsg = new String[10];
 	private int mPointerCount;
 
 	private Paint mPaint = new Paint();
@@ -81,8 +82,10 @@ public class TouchZone extends View {
 		mUpdating = true;
 		mPointerCount = me.getPointerCount();
 		for (int i = 0; i < mPointerCount; i++) {
-			mXs[i] = me.getX(me.getPointerId(i));
-			mYs[i] = me.getY(me.getPointerId(i));
+			int id = me.getPointerId(i);
+			mXs[i] = me.getX(id);
+			mYs[i] = me.getY(id);
+			mPointerMsg[i]=String.format(" Pressure: %1$.4f", me.getPressure(id));
 			Log.d(TOUCH_ZONE_VIEW, String.format("Pid: %1$d", me
 					.getPointerId(i)));
 			Log.d(TOUCH_ZONE_VIEW, String.format(
@@ -113,10 +116,10 @@ public class TouchZone extends View {
 				if (mXs[i] > 0f) {
 					canvas.drawCircle(mXs[i], mYs[i], _RADIUS, mPaint);
 					Log.d(TOUCH_ZONE_VIEW, String.format(
-							"Pointer %3$d => x:%1$e y%2$e", mXs[i], mYs[i], i));
+							"Pointer %3$d x:%1$e y%2$e", mXs[i], mYs[i], i));
 					canvas.drawText(String.format(
-							"Pointer %3$d position => x:%1$.1f y%2$.1f",
-							mXs[i], mYs[i], i), mViewLocation[0],
+							"Pointer %3$d position x:%1$.1f y%2$.1f;%4$s",
+							mXs[i], mYs[i], i, mPointerMsg[i]), mViewLocation[0],
 							mViewLocation[1] + _FONT_SIZE + _SMALL_FONT_SIZE
 									* i, mPenPaintSmall);
 				}
