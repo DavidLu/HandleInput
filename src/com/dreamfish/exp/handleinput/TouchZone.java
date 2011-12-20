@@ -87,10 +87,10 @@ public class TouchZone extends View {
 			invalidate();
 			break;
 		case MotionEvent.ACTION_UP:
-			setXY(me, timeSpan);
-			Log.d(TOUCH_ZONE_VIEW, String.format("Pointer count: %1$d", me
-					.getPointerCount()));
-			invalidate();
+			//setXY(me, timeSpan);
+//			Log.d(TOUCH_ZONE_VIEW, String.format("Pointer count: %1$d", me
+//					.getPointerCount()));
+//			invalidate();
 			break;
 
 		}
@@ -120,6 +120,53 @@ public class TouchZone extends View {
 		
 		return direction;
 	}
+	
+	private double calcDegree(float x1, float y1, float x2, float y2){
+		float a = Math.abs(x2-x1);
+		float b = Math.abs(y1-y2);
+		double deg = Math.atan(b/a)*90;
+		int flag = 0;
+		if (x1<x2) {
+			
+		}
+		else {
+			flag+= 1;
+		}
+		if (y1<y2) {
+			flag += 10;
+		}
+		else {
+			
+		}
+		
+		switch (flag){
+		case 0:
+			//I
+			
+			break;
+		case 1:
+			//II
+			deg = 180-deg;
+			break;
+		case 10:
+			//IV
+			deg = 360 - deg;
+			break;
+		case 11:
+			//III
+			deg = 180 + deg;
+			break;
+
+		}
+		
+		
+		// return average value of last 5 points 
+		Log.d(TOUCH_ZONE_VIEW, String.format("Degree: %1$f", deg));
+		return deg;
+		//mDegQueue.
+	}
+	
+	private java.util.Queue<double[]> mDegQueue;
 
 	private void setXY(MotionEvent me) {
 		mUpdating = true;
@@ -152,10 +199,11 @@ public class TouchZone extends View {
 			
 			float speed = calcSpeed(mXs[i],mYs[i],me.getX(i),me.getY(i),timeSpan);
 			String direction = calcDirection(mXs[i],mYs[i],me.getX(i),me.getY(i));
+			double deg = calcDegree(mXs[i],mYs[i],me.getX(i),me.getY(i));
 			Log.d(TOUCH_ZONE_VIEW, String.format("Move Speed: %1$f", speed ));
 			mXs[i] = me.getX(id);
 			mYs[i] = me.getY(id);
-			mPointerMsg[i]=String.format(" Pressure: %1$.4f Spd: %2$.2f Dir:%3$s", me.getPressure(id), speed, direction);
+			mPointerMsg[i]=String.format(" Prs:%1$.4f Spd:%2$.2f Dir:%3$s Deg:%4$.4f", me.getPressure(id), speed, direction,deg);
 			Log.d(TOUCH_ZONE_VIEW, String.format("Pid: %1$d", me
 					.getPointerId(i)));
 			Log.d(TOUCH_ZONE_VIEW, String.format(
