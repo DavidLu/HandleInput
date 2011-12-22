@@ -32,6 +32,8 @@ public class TouchZone extends View {
 	
 	private long mLastTouchTime = -1;
 	private float mMoveSpeed = 0;
+	
+	private InputPointQueue mInputPointQueue;
 
 	public TouchZone(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -46,6 +48,7 @@ public class TouchZone extends View {
 		Log.d(TOUCH_ZONE_VIEW, String.format(
 				"onCreate: ViewLocation X:%1$d Y:%2$d", mViewLocation[0],
 				mViewLocation[1]));
+		mInputPointQueue = new InputPointQueue(5);
 	}
 
 	@Override
@@ -68,6 +71,8 @@ public class TouchZone extends View {
 			timeSpan = nowTime - mLastTouchTime;
 			mLastTouchTime = nowTime;
 		}
+		InputPoint newPoint = new InputPoint(me.getX(),me.getY(),System.currentTimeMillis());
+		mInputPointQueue.add(newPoint);
 		
 		switch (me.getAction()) {
 		case MotionEvent.ACTION_DOWN:
@@ -91,6 +96,7 @@ public class TouchZone extends View {
 //			Log.d(TOUCH_ZONE_VIEW, String.format("Pointer count: %1$d", me
 //					.getPointerCount()));
 //			invalidate();
+			mInputPointQueue.clear();
 			break;
 
 		}
@@ -237,8 +243,8 @@ public class TouchZone extends View {
 					Log.d(TOUCH_ZONE_VIEW, String.format(
 							"Pointer %3$d x:%1$e y%2$e", mXs[i], mYs[i], i));
 					canvas.drawText(String.format(
-							"P%3$d pos x:%1$.1f y%2$.1f;%4$s",
-							mXs[i], mYs[i], i, mPointerMsg[i]), mViewLocation[0],
+							"P%3$d x:%1$.1f y%2$.1f;%4$s;%5$f",
+							mXs[i], mYs[i], i, mPointerMsg[i],mInputPointQueue.getAverageSpeed()), mViewLocation[0],
 							mViewLocation[1] + _FONT_SIZE + _SMALL_FONT_SIZE
 									* i, mPenPaintSmall);
 				}
